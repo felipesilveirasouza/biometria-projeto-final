@@ -1,0 +1,11 @@
+# Python 3.12 (o facenet-pytorch 2.6.0 exige torch 2.2.x, que não tem wheel para 3.13+)
+torch==2.2.2
+torchvision==0.17.2
+facenet-pytorch==2.6.0
+numpy==1.26.4
+Pillow==10.2.0
+pandas==2.2.3
+scikit-learn==1.5.2
+matplotlib==3.9.2
+PyYAML==6.0.2
+tqdm==4.66.5

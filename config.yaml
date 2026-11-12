@@ -1,0 +1,42 @@
+# Configuração única do experimento. Todos os scripts leem este arquivo.
+seed: 42
+device: auto            # auto | cuda | cpu
+
+paths:
+  cfp_fp_root: data/cfp-dataset      # contém Data/ e Protocol/
+  lfw_root: data/lfw                 # contém <Nome>/<Nome>_0001.jpg
+  lfw_pairs: data/lfw/pairs.txt      # View 2 oficial (10 folds x 600 pares)
+  protocols: protocols
+  cache: cache                       # recortes e embeddings (fora do git)
+  results: results
+
+main_dataset: cfp_fp     # base principal (threshold congelado vem dela)
+second_dataset: lfw      # segunda base (cross-dataset)
+
+preprocess:
+  image_size: 160          # entrada da Inception-ResNet-v1
+  align: true              # true = alinhamento por 5 landmarks; false = só recorte da bbox (ablação)
+  align_scale: 1.0         # escala do template de landmarks (1.0 = recorte justo, estilo ArcFace)
+  max_align_rotation: 30   # graus; landmarks implausíveis (comum em perfil) caem para o recorte da bbox
+  bbox_margin: 20          # margem em pixels do recorte pela bbox (ablação e fallback)
+  min_face_prob: 0.90      # controle de qualidade: abaixo disso conta como falha de aquisição
+  fta_policy: fallback     # fallback = recorte central e segue; reject = par recebe score -1
+
+model:
+  name: inception_resnet_v1
+  pretrained: vggface2     # vggface2 | casia-webface
+  batch_size: 64
+  timing_images: 256       # imagens usadas para medir o tempo médio de inferência
+
+threshold:
+  rule: eer                # eer = limiar onde FMR = FNMR na validação | far = limiar para target_far
+  target_far: 0.01
+
+robustness:
+  dataset: cfp_fp
+  apply_to: second         # degrada só a segunda amostra de cada par (a primeira é a referência limpa)
+  blur_sigmas: [0, 1.5, 3.0, 5.0]           # original, baixa, média, alta
+  occlusion_fracs: [0, 0.15, 0.30, 0.45]    # lado do bloco cinza como fração do recorte
+
+errors:
+  per_type: 3              # falsos matches e falsos non-matches mostrados

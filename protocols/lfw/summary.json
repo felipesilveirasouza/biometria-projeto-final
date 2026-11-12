@@ -1,0 +1,12 @@
+{
+  "dataset": "lfw",
+  "folds": 10,
+  "pairs": 6000,
+  "genuine": 3000,
+  "impostor": 3000,
+  "images": 7701,
+  "identities": 4281,
+  "missing_images": 0,
+  "identity_disjoint_folds": true,
+  "folds_sharing_identities": {}
+}

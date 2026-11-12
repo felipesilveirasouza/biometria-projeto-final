@@ -1,0 +1,8 @@
+# bases originais não podem ser redistribuídas (§22)
+data/
+# recortes e embeddings são regeráveis
+cache/
+.venv/
+__pycache__/
+*.pyc
+results/**/roc.npz
