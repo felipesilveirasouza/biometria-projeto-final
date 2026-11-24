@@ -1,0 +1,7 @@
+amostra_1,amostra_2,tipo,score,fold,threshold,erro,hipotese
+Cha_Yung-gu/Cha_Yung-gu_0001.jpg,Takeo_Hiranuma/Takeo_Hiranuma_0001.jpg,impostor,0.6734,8,0.25613754987716675,falso match,
+Guangdong_Ou_Guangyuan/Guangdong_Ou_Guangyuan_0001.jpg,Li_Ruihuan/Li_Ruihuan_0001.jpg,impostor,0.639053,8,0.25613754987716675,falso match,
+Anzori_Kikalishvili/Anzori_Kikalishvili_0001.jpg,Earl_Fritts/Earl_Fritts_0001.jpg,impostor,0.475637,10,0.25613754987716675,falso match,
+Christina_Aguilera/Christina_Aguilera_0002.jpg,Christina_Aguilera/Christina_Aguilera_0004.jpg,genuine,0.051909,7,0.25613754987716675,falso non-match,
+Cristina_Fernandez/Cristina_Fernandez_0001.jpg,Cristina_Fernandez/Cristina_Fernandez_0002.jpg,genuine,0.115915,4,0.25613754987716675,falso non-match,
+Elisabeth_Schumacher/Elisabeth_Schumacher_0001.jpg,Elisabeth_Schumacher/Elisabeth_Schumacher_0002.jpg,genuine,0.130491,5,0.25613754987716675,falso non-match,

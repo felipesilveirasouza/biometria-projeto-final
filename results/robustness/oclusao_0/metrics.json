@@ -1,0 +1,12 @@
+{
+  "perturbacao": "oclusao",
+  "nivel": "original",
+  "parametro": 0,
+  "EER": 0.05085714285714284,
+  "AUC": 0.9840192653061224,
+  "TAR@FAR=1%": 0.898,
+  "FMR": 0.05057142857142858,
+  "FNMR": 0.050571428571428566,
+  "accuracy": 0.9494285714285715,
+  "FTA_probe": null
+}

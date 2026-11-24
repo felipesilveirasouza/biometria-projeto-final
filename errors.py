@@ -23,6 +23,20 @@ from common import dataset_root, load_config, path
 from preprocess import crops_dir
 
 
+def distinct(df: pd.DataFrame, n: int) -> pd.DataFrame:
+    """Os n piores erros sem repetir imagem: a mesma foto ruim costuma aparecer em
+    vários pares e mostraria um único caso várias vezes."""
+    seen, rows = set(), []
+    for idx, r in df.iterrows():
+        if r.amostra_1 in seen or r.amostra_2 in seen:
+            continue
+        seen |= {r.amostra_1, r.amostra_2}
+        rows.append(idx)
+        if len(rows) == n:
+            break
+    return df.loc[rows]
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--tag", required=True)
@@ -38,8 +52,9 @@ def main() -> None:
     else:
         sc["threshold"] = m["threshold"]
     n = cfg["errors"]["per_type"]
-    fm = sc[(sc.tipo == "impostor") & (sc.score >= sc.threshold)].nlargest(n, "score").assign(erro="falso match")
-    fnm = sc[(sc.tipo == "genuine") & (sc.score < sc.threshold)].nsmallest(n, "score").assign(erro="falso non-match")
+    fm = distinct(sc[(sc.tipo == "impostor") & (sc.score >= sc.threshold)].sort_values("score", ascending=False), n)
+    fnm = distinct(sc[(sc.tipo == "genuine") & (sc.score < sc.threshold)].sort_values("score"), n)
+    fm, fnm = fm.assign(erro="falso match"), fnm.assign(erro="falso non-match")
     err = pd.concat([fm, fnm], ignore_index=True)
     err["hipotese"] = ""
     err.to_csv(res / "errors.csv", index=False)

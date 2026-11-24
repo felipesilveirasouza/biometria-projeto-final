@@ -11,7 +11,7 @@
 
 Os recortes ficam em cache/crops/<variante>/<base>/<caminho>.png.
 
-Uso: python preprocess.py --dataset cfp_fp [--no-align]
+Uso: python preprocess.py --dataset cfp_fp [--align | --no-align]  (padrão: config.yaml)
 """
 from __future__ import annotations
 
@@ -83,14 +83,20 @@ class FacePreprocessor:
         self.mtcnn = MTCNN(keep_all=True, device=device)
 
     def detect(self, img: Image.Image):
-        """Melhor rosto: o de maior área entre os detectados. None se nenhum."""
+        """Rosto do sujeito quando há vários: maior área penalizada pela distância ao
+        centro da imagem (o mesmo critério de align_dataset_mtcnn.py do FaceNet
+        original). Nas duas bases o sujeito rotulado está centralizado; escolher só a
+        maior área pega pessoas ao fundo. None se nenhum rosto."""
         boxes, probs, points = self.mtcnn.detect(img, landmarks=True)
         if boxes is None:
             return None
         areas = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
+        cx, cy = img.size[0] / 2, img.size[1] / 2
+        off = ((boxes[:, 0] + boxes[:, 2]) / 2 - cx) ** 2 + ((boxes[:, 1] + boxes[:, 3]) / 2 - cy) ** 2
+        rank = areas - 2.0 * off
         ok = probs >= self.cfg["min_face_prob"]
         pool = np.where(ok)[0] if ok.any() else np.arange(len(boxes))
-        i = pool[np.argmax(areas[pool])]
+        i = pool[np.argmax(rank[pool])]
         return boxes[i], float(probs[i]), points[i]
 
     def __call__(self, img: Image.Image) -> tuple[Image.Image, dict]:
@@ -196,11 +202,13 @@ def run(cfg: dict, dataset: str, keys: list[str], variant: str | None = None,
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", choices=["cfp_fp", "lfw"], required=True)
-    ap.add_argument("--no-align", action="store_true", help="ablação: recorte só pela bbox")
+    g = ap.add_mutually_exclusive_group()
+    g.add_argument("--align", action="store_true", help="força o alinhamento por landmarks (ablação)")
+    g.add_argument("--no-align", action="store_true", help="força o recorte só pela bbox")
     args = ap.parse_args()
     cfg = load_config()
-    if args.no_align:
-        cfg["preprocess"]["align"] = False
+    if args.align or args.no_align:
+        cfg["preprocess"]["align"] = args.align
     keys = pair_images(load_pairs(cfg, args.dataset))
     q = run(cfg, args.dataset, keys)
     print(f"{len(q)} imagens | FTA = {q['fta'].mean():.4f} ({int(q['fta'].sum())}) | "

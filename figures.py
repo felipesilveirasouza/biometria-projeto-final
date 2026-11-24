@@ -1,8 +1,8 @@
 """Figura com exemplos reais das etapas do pipeline (§6), para o artigo e os slides.
 
 Linhas: amostras de exemplo. Colunas: imagem bruta → detecção (bbox + 5
-landmarks) → recorte alinhado → recorte só pela bbox (ablação) → entrada
-normalizada da CNN.
+landmarks) → recorte pela bbox (principal) → recorte alinhado por landmarks
+(ablação) → entrada normalizada da CNN (da variante principal).
 
 Uso: python figures.py --dataset cfp_fp [--n 3]
 """
@@ -34,7 +34,7 @@ def main() -> None:
     import matplotlib.pyplot as plt
     import matplotlib.patches as patches
 
-    cols = ["Bruta", "Detecção + landmarks", "Alinhada (landmarks)", "Só bbox (ablação)", "Normalizada"]
+    cols = ["Bruta", "Detecção + landmarks", "Bbox (principal)", "Alinhada (ablação)", "Normalizada"]
     fig, axes = plt.subplots(len(keys), 5, figsize=(11, 2.3 * len(keys)), squeeze=False)
     for i, key in enumerate(keys):
         img = Image.open(dataset_root(cfg, args.dataset) / key).convert("RGB")
@@ -52,9 +52,10 @@ def main() -> None:
             ok, why = plausible_landmarks(img, box, pts, c["image_size"], c)
             al = align(img, pts, c["image_size"], c["align_scale"]) if ok else bb
             axes[i, 1].set_xlabel(f"p = {prob:.3f}" + ("" if ok else f"\n{why} → usa bbox"), fontsize=7)
-            axes[i, 2].imshow(al)
-            axes[i, 3].imshow(bb)
-            norm = (np.asarray(al, dtype=np.float32) - 127.5) / 128.0
+            main = al if c["align"] else bb
+            axes[i, 2].imshow(bb)
+            axes[i, 3].imshow(al)
+            norm = (np.asarray(main, dtype=np.float32) - 127.5) / 128.0
             axes[i, 4].imshow(np.clip((norm + 1) / 2, 0, 1))
         else:
             axes[i, 1].set_xlabel("sem detecção (FTA)", fontsize=7)

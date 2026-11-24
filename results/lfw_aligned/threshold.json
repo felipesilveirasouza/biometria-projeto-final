@@ -1,0 +1,6 @@
+{
+  "dataset": "lfw",
+  "variant": "aligned",
+  "rule": "eer",
+  "threshold": 0.4094923734664917
+}

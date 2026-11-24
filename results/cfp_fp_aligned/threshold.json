@@ -1,0 +1,6 @@
+{
+  "dataset": "cfp_fp",
+  "variant": "aligned",
+  "rule": "eer",
+  "threshold": 0.25138384103775024
+}

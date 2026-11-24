@@ -14,7 +14,7 @@ definido só na validação.
 | Origem dos pesos | [facenet-pytorch](https://github.com/timesler/facenet-pytorch), convertidos de [davidsandberg/facenet](https://github.com/davidsandberg/facenet) |
 | Dataset de pré-treinamento | VGGFace2 (`model.pretrained` no `config.yaml`) |
 | Camadas congeladas / treinadas | todas congeladas / nenhuma (sem fine-tuning) |
-| Função de perda (pré-treino) | softmax de classificação de identidade, conforme o repositório original (conferir antes de citar) |
+| Função de perda (pré-treino) | softmax de classificação de identidade (modelo `20180402-114759`, sem center loss nem triplet; LFW reportado 0,9965 ± 0,0025 no repositório original) |
 | Dimensão do embedding | 512, normalizado em L2 |
 | Nº de parâmetros / tamanho | gerados em `results/efficiency.json` |
 | Matching | similaridade de cosseno (maior = mais parecido) |
@@ -27,15 +27,25 @@ definido só na validação.
 imagem bruta
  → controle de qualidade (abre? MTCNN acha rosto com p ≥ 0,90? senão conta FTA)
  → detecção e localização (MTCNN: bbox + 5 landmarks)
- → alinhamento (similaridade de Umeyama para o template de 5 pontos)
- → recorte 160×160
+ → seleção do rosto (maior área penalizada pela distância ao centro)
+ → recorte pela bbox (margem 20 px) e redimensionamento para 160×160
  → normalização de intensidade (x − 127,5) / 128
  → Inception-ResNet-v1 → embedding 512-D (L2)
  → cosseno entre os dois embeddings → score
  → threshold (da validação, congelado) → genuíno / impostor
 ```
 
-**Alinhamento em perfil.** O template de 5 pontos é frontal. Em imagens de
+**Por que recorte pela bbox, e não alinhamento.** O modelo foi pré-treinado com
+recortes da MTCNN pela bbox (FaceNet original). Por isso essa é a configuração
+principal (`preprocess.align: false`). O alinhamento por 5 landmarks para o
+template do ArcFace é avaliado como ablação (`--align`) e piora o resultado nas
+duas bases.
+
+**Seleção do rosto.** Com vários rostos na imagem, escolhe-se o de maior área
+penalizada pela distância ao centro, o mesmo critério de `align_dataset_mtcnn.py`
+do FaceNet original. Escolher só o maior pega pessoas ao fundo em parte do LFW.
+
+**Alinhamento em perfil (ablação).** O template de 5 pontos é frontal. Em imagens de
 perfil a MTCNN costuma posicionar landmarks fora do rosto, e o alinhamento
 gera recortes girados e quase vazios. Por isso os landmarks passam por uma
 verificação de plausibilidade antes de alinhar: todos dentro da imagem e da
@@ -69,12 +79,12 @@ pela coluna `fold` de `protocols/<base>/pairs.csv`.
 
 | Experimento | O que é | Comando | Saída |
 |---|---|---|---|
-| A | CFP-FP, protocolo oficial | `python evaluate.py --dataset cfp_fp` | `results/cfp_fp_aligned/` |
-| B | LFW, protocolo oficial | `python evaluate.py --dataset lfw` | `results/lfw_aligned/` |
-| C | Cross-dataset: threshold global do CFP-FP congelado e aplicado ao LFW, sem ajuste | `python evaluate.py --dataset lfw --frozen-from cfp_fp_aligned --tag cross_cfp_fp_to_lfw` | `results/cross_cfp_fp_to_lfw/` |
+| A | CFP-FP, protocolo oficial | `python evaluate.py --dataset cfp_fp` | `results/cfp_fp_bbox/` |
+| B | LFW, protocolo oficial | `python evaluate.py --dataset lfw` | `results/lfw_bbox/` |
+| C | Cross-dataset: threshold global do CFP-FP congelado e aplicado ao LFW, sem ajuste | `python evaluate.py --dataset lfw --frozen-from cfp_fp_bbox --tag cross_cfp_fp_to_lfw` | `results/cross_cfp_fp_to_lfw/` |
 | D | Robustez: blur (σ = 0; 1,5; 3; 5) e oclusão (0; 15; 30; 45% do lado) na 2ª amostra | `python robustness.py` | `results/robustness/` |
-| Ablação | Sem alinhamento por landmarks (só bbox) | ver `run_all.sh` | `results/cfp_fp_bbox/` |
-| Erros | 3 falsos matches + 3 falsos non-matches | `python errors.py --tag cfp_fp_aligned` | `errors.csv`, `errors.png` |
+| Ablação | Alinhamento por 5 landmarks em vez do recorte pela bbox, nas duas bases | ver `run_all.sh` | `results/cfp_fp_aligned/`, `results/lfw_aligned/` |
+| Erros | 3 falsos matches + 3 falsos non-matches | `python errors.py --tag cfp_fp_bbox` | `errors.csv`, `errors.png` |
 
 ## Como obter os dados
 

@@ -1,0 +1,21 @@
+{
+  "dataset": "lfw",
+  "variant": "bbox",
+  "matching": "cosseno (embeddings L2-normalizados)",
+  "threshold_rule": "eer",
+  "EER": 0.005666666666666688,
+  "EER_threshold": 0.40984460711479187,
+  "AUC": 0.9994758888888888,
+  "TAR@FAR=1%": 0.996,
+  "n_genuine": 3000,
+  "n_impostor": 3000,
+  "protocol": "cross-dataset: threshold congelado de 'cfp_fp_bbox'",
+  "threshold": 0.25613754987716675,
+  "FMR": 0.06733333333333333,
+  "FNMR": 0.0016666666666666668,
+  "accuracy": 0.9655,
+  "FTA": 0.0001298532658096351,
+  "fta_images": 1,
+  "pairs_with_fta": 1,
+  "fta_policy": "fallback"
+}

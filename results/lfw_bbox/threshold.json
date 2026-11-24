@@ -1,0 +1,6 @@
+{
+  "dataset": "lfw",
+  "variant": "bbox",
+  "rule": "eer",
+  "threshold": 0.40984460711479187
+}

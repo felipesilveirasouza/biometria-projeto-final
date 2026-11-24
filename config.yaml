@@ -15,7 +15,8 @@ second_dataset: lfw      # segunda base (cross-dataset)
 
 preprocess:
   image_size: 160          # entrada da Inception-ResNet-v1
-  align: true              # true = alinhamento por 5 landmarks; false = só recorte da bbox (ablação)
+  align: false             # false = recorte pela bbox da MTCNN (principal: é o pré-processamento do pré-treino do FaceNet)
+                           # true  = alinhamento por 5 landmarks (ablação)
   align_scale: 1.0         # escala do template de landmarks (1.0 = recorte justo, estilo ArcFace)
   max_align_rotation: 30   # graus; landmarks implausíveis (comum em perfil) caem para o recorte da bbox
   bbox_margin: 20          # margem em pixels do recorte pela bbox (ablação e fallback)

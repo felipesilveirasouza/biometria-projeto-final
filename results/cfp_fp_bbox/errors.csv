@@ -1,0 +1,7 @@
+amostra_1,amostra_2,tipo,score,fold,threshold,erro,hipotese
+Data/Images/335/frontal/10.jpg,Data/Images/312/profile/01.jpg,impostor,0.51351,7,0.2531425058841705,falso match,
+Data/Images/490/frontal/06.jpg,Data/Images/468/profile/01.jpg,impostor,0.497326,10,0.2546306848526001,falso match,
+Data/Images/314/frontal/07.jpg,Data/Images/313/profile/04.jpg,impostor,0.485557,7,0.2531425058841705,falso match,
+Data/Images/004/frontal/08.jpg,Data/Images/004/profile/04.jpg,genuine,-0.430788,1,0.2573509216308594,falso non-match,
+Data/Images/057/frontal/02.jpg,Data/Images/057/profile/04.jpg,genuine,-0.271164,2,0.2565531134605407,falso non-match,
+Data/Images/232/frontal/08.jpg,Data/Images/232/profile/02.jpg,genuine,-0.209289,5,0.2598792314529419,falso non-match,

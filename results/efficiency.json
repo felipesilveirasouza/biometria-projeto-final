@@ -1,0 +1,20 @@
+{
+  "architecture": "Inception-ResNet-v1 (FaceNet)",
+  "params": 23482624,
+  "params_millions": 23.48,
+  "weights_size_mb": 89.9,
+  "embedding_dim": 512,
+  "pretrained": "vggface2",
+  "timing": {
+    "device": "cuda",
+    "ms_per_image_batch1": 22.256,
+    "ms_per_image_batch64": 3.662,
+    "n_images": 256
+  },
+  "hardware": {
+    "cpu": "AMD Ryzen 7 1700 Eight-Core Processor",
+    "gpu": "NVIDIA GeForce GTX 1050 Ti",
+    "torch": "2.2.2+cu121",
+    "python": "3.12.16"
+  }
+}
