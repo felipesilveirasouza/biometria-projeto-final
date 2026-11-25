@@ -67,7 +67,7 @@ def timing(cfg: dict, dataset: str, variant: str, model, device: str) -> dict:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dataset", choices=["cfp_fp", "lfw"], required=True)
+    ap.add_argument("--dataset", choices=["cfp_fp", "cfp_ff", "lfw"], required=True)
     ap.add_argument("--variant", default=None, help="padrão: aligned (ou bbox se align=false)")
     ap.add_argument("--timing", action="store_true", help="mede o tempo de inferência e salva efficiency.json")
     args = ap.parse_args()

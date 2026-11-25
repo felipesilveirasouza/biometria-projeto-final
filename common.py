@@ -44,7 +44,7 @@ def path(cfg: dict, key: str) -> Path:
 
 
 def dataset_root(cfg: dict, dataset: str) -> Path:
-    return path(cfg, {"cfp_fp": "cfp_fp_root", "lfw": "lfw_root"}[dataset])
+    return path(cfg, {"cfp_fp": "cfp_fp_root", "cfp_ff": "cfp_fp_root", "lfw": "lfw_root"}[dataset])
 
 
 def variant_name(cfg: dict) -> str:

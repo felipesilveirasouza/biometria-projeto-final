@@ -81,6 +81,7 @@ pela coluna `fold` de `protocols/<base>/pairs.csv`.
 |---|---|---|---|
 | A | CFP-FP, protocolo oficial | `python evaluate.py --dataset cfp_fp` | `results/cfp_fp_bbox/` |
 | B | LFW, protocolo oficial | `python evaluate.py --dataset lfw` | `results/lfw_bbox/` |
+| Ref. pose | CFP frontal × frontal (protocolo FF), mesmas pessoas, para isolar o efeito da pose | `python evaluate.py --dataset cfp_ff` | `results/cfp_ff_bbox/` |
 | C | Cross-dataset: threshold global do CFP-FP congelado e aplicado ao LFW, sem ajuste | `python evaluate.py --dataset lfw --frozen-from cfp_fp_bbox --tag cross_cfp_fp_to_lfw` | `results/cross_cfp_fp_to_lfw/` |
 | D | Robustez: blur (σ = 0; 1,5; 3; 5) e oclusão (0; 15; 30; 45% do lado) na 2ª amostra | `python robustness.py` | `results/robustness/` |
 | Ablação | Alinhamento por 5 landmarks em vez do recorte pela bbox, nas duas bases | ver `run_all.sh` | `results/cfp_fp_aligned/`, `results/lfw_aligned/` |

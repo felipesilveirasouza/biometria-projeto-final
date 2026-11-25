@@ -1,5 +1,27 @@
 # Tabela padronizada de resultados (§26)
 
+## cfp_ff_bbox
+
+| Informação | Resultado |
+|---|---|
+| Modalidade | Face |
+| Dataset | cfp_ff |
+| CNN | Inception-ResNet-v1 (FaceNet) |
+| Pré-treinamento | vggface2 (pesos congelados) |
+| Nº de parâmetros | 23.48 M |
+| Dimensão do embedding | 512 |
+| Matching | similaridade de cosseno (L2) |
+| Threshold | 0.3748 (eer) |
+| EER | 1.00% |
+| AUC | 0.9992 |
+| FMR | 1.00% ± 0.61% |
+| FNMR | 1.03% ± 0.70% |
+| TAR@FAR=1% | 99.09% |
+| FTA | 0.19% |
+| Tempo de inferência | 22.256 ms/imagem (batch 1, cuda) |
+| Tamanho do modelo | 89.9 MB |
+| Hardware | NVIDIA GeForce GTX 1050 Ti / AMD Ryzen 7 1700 Eight-Core Processor |
+
 ## cfp_fp_aligned
 
 | Informação | Resultado |

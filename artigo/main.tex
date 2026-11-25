@@ -29,11 +29,21 @@ Câmpus Ponta Grossa}}
 \maketitle
 
 \begin{abstract}
-\todo{escrever por último (150--200 palavras): problema (verificação 1:1 frontal
-$\times$ perfil), método (Inception-ResNet-v1 pré-treinada no VGGFace2, congelada,
-cosseno), protocolo (10 folds oficiais, threshold na validação), principais números
-(EER CFP-FP \eerCFP, LFW \eerLFW, cross-dataset), achado principal (alinhamento /
-perfil / robustez).}
+A verificação facial 1:1 ainda é sensível à pose: comparar uma foto frontal com uma
+de perfil reduz a similaridade entre amostras da mesma pessoa. Este trabalho avalia um
+sistema de verificação baseado em embeddings de 512 dimensões de uma
+Inception-ResNet-v1 (FaceNet) pré-treinada no VGGFace2 e usada sem ajuste, com
+comparação por similaridade de cosseno. Seguindo os protocolos oficiais de 10 folds,
+com o threshold escolhido apenas na validação, o sistema obtém EER de \eerCFP\% no
+CFP-FP (frontal $\times$ perfil), contra \eerFF\% na comparação frontal $\times$
+frontal das mesmas pessoas, e de \eerLFW\% no LFW. O threshold calibrado no
+CFP-FP, aplicado ao LFW sem ajuste, eleva a FMR para \fmrCross\%, o que mostra a
+necessidade de recalibrar o limiar a cada cenário. Sob degradações, o sistema tolera
+oclusões pequenas e desfoque leve, mas o EER chega a \eerBlurAlta\% com desfoque
+forte. Uma ablação mostra que alinhar a face pelo template de 5 pontos do ArcFace
+piora o desempenho de um modelo pré-treinado com recortes pela bbox, e a análise de
+erros indica que pose extrema combinada com falhas de detecção explica os piores
+casos. O código e os resultados estão no repositório indicado no texto.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -132,7 +142,10 @@ avaliação.
 contém 500 identidades, cada uma com 10 imagens frontais e 4 de perfil coletadas na
 internet (\num{7000} imagens). O protocolo FP compara uma imagem frontal com uma de
 perfil e é dividido em 10 folds de 350 pares genuínos e 350 impostores
-(\num{7000} pares, \num{5901} imagens distintas usadas).
+(\num{7000} pares, \num{5901} imagens distintas usadas). A base também tem um
+protocolo FF, com a mesma estrutura de folds, que compara duas frontais; ele é usado
+aqui apenas como referência, para isolar o efeito da pose mantendo as mesmas pessoas e
+a mesma forma de aquisição.
 
 \textbf{LFW (segunda base).} O \emph{Labeled Faces in the Wild}~\cite{huang2007labeled}
 tem \num{13233} imagens de \num{5749} pessoas, também coletadas da internet, com pose
@@ -140,7 +153,19 @@ predominantemente quase frontal. Usa-se a View~2: 10 folds de 300 pares genuíno
 impostores (\num{6000} pares, \num{7701} imagens, \num{4281} identidades).
 
 Nas duas bases os folds oficiais são disjuntos por identidade, o que foi verificado
-automaticamente (\texttt{make\_protocols.py}). A Fig.~\ref{fig:pipeline} mostra exemplos.
+automaticamente (\texttt{make\_protocols.py}), de modo que nenhuma pessoa aparece ao mesmo
+tempo na validação e no teste. A Fig.~\ref{fig:exemplos} mostra exemplos: no CFP-FP, as
+frontais são fotos posadas e bem enquadradas, enquanto os perfis variam em ângulo,
+iluminação, cor e enquadramento; no LFW, as fotos são de imprensa, quase frontais,
+com fundo complexo e outras pessoas na cena.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.9\textwidth]{exemplos_bases.png}
+\caption{Exemplos das bases. Esquerda: três identidades do CFP-FP, com duas frontais e
+dois perfis cada. Direita: seis pares genuínos do LFW (View~2).}
+\label{fig:exemplos}
+\end{figure*}
 
 % =====================================================================
 \section{Metodologia}
@@ -153,11 +178,12 @@ $\rightarrow$ normalização $(x-127{,}5)/128$ $\rightarrow$ CNN $\rightarrow$ e
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{pipeline_cfp_fp.png}
-\caption{Etapas do pré-processamento em pares genuínos do CFP-FP: imagem bruta,
-detecção com landmarks, recorte pela bbox (principal), recorte alinhado por
-landmarks (ablação) e entrada normalizada.
-\todo{trocar/combinar com pipeline\_lfw.png se couber.}}
+\includegraphics[width=0.85\textwidth]{pipeline_artigo.png}
+\caption{Etapas do pré-processamento em um par genuíno do CFP-FP (frontal acima,
+perfil abaixo): imagem bruta, detecção com bbox e 5 landmarks, recorte pela bbox
+(configuração principal), recorte alinhado por landmarks (ablação) e entrada
+normalizada. No perfil, os landmarks são implausíveis e a ablação também usa a bbox.
+Mais exemplos de ambas as bases estão no repositório.}
 \label{fig:pipeline}
 \end{figure*}
 
@@ -170,8 +196,8 @@ central (política \emph{fallback}) e a falha é contabilizada.
 Quando a MTCNN detecta mais de um rosto, escolhe-se o de maior área penalizada pela
 distância ao centro da imagem (o sujeito rotulado está centralizado nas duas bases),
 critério usado pelo FaceNet original~\cite{sandberg_facenet}. Escolher apenas o maior
-rosto seleciona pessoas ao fundo em parte das imagens do LFW; corrigir isso elevou a
-acurácia no LFW de \todo{94,7\%} para \accLFW\%. O recorte é feito pela bbox com
+rosto seleciona pessoas ao fundo em parte das imagens do LFW, o que gerava pares
+genuínos com score próximo de zero na primeira versão do sistema. O recorte é feito pela bbox com
 margem de 20~px e redimensionado para $160\times160$, como no pré-treino do
 modelo~\cite{sandberg_facenet}.
 
@@ -205,6 +231,26 @@ média $\pm$ desvio-padrão dos 10 folds. EER, AUC e TAR@FAR=1\% independem de $
 usam todos os pares. Como não há treino, não há conjunto de treino nem repetição com
 seeds; a seed 42 fixa as posições das oclusões.
 
+\textbf{Métricas.} Sejam $G$ e $I$ os conjuntos de scores genuínos e impostores e
+$\tau$ o threshold. Um par é aceito quando $s \geq \tau$, com
+$s(\mathbf{a},\mathbf{b}) = \mathbf{a}^\top\mathbf{b}/(\lVert\mathbf{a}\rVert\,\lVert\mathbf{b}\rVert)$.
+Então
+\begin{equation}
+\mathrm{FMR}(\tau) = \frac{|\{s \in I : s \geq \tau\}|}{|I|}, \quad
+\mathrm{FNMR}(\tau) = \frac{|\{s \in G : s < \tau\}|}{|G|}.
+\end{equation}
+O EER é o valor em que $\mathrm{FMR}(\tau) = \mathrm{FNMR}(\tau)$, e o $\tau$
+correspondente na validação é o threshold de operação. A curva ROC traça
+$\mathrm{TAR} = 1 - \mathrm{FNMR}$ contra $\mathrm{FAR} = \mathrm{FMR}$ para todos
+os $\tau$; a AUC é sua área, e TAR@FAR=1\% é a TAR no maior $\tau$ com FMR $\leq$
+1\%~\cite{iso19795}. Essa métrica só é reportada porque há pelo menos 3.000
+impostores por base (30 aceitações esperadas a 1\%). O FTA é a fração de amostras com
+falha de aquisição; com a política \emph{fallback}, elas seguem no pipeline com um
+recorte central e entram nas métricas, como acontece em um sistema real.
+
+\textbf{Referência de pose.} O mesmo pipeline é avaliado no protocolo FF do CFP, com
+o mesmo procedimento de threshold. A diferença entre FF e FP mede o custo da pose.
+
 \textbf{Cross-dataset (C).} O threshold global do CFP-FP ($\tau=\thrCFP$) é congelado e
 aplicado ao LFW sem nenhum ajuste.
 
@@ -220,9 +266,23 @@ recorte, em posição aleatória determinística. Os thresholds são os do exper
 % =====================================================================
 \section{Resultados}
 % EER, FMR, FNMR, ROC/AUC, distribuições, eficiência e demais métricas
+A Tab.~\ref{tab:resultados} resume os experimentos e a Tab.~\ref{tab:padronizada}
+traz a tabela padronizada da disciplina. No CFP-FP (experimento A), o
+sistema obtém EER de \eerCFP\% e AUC de \aucCFP; com o threshold escolhido na
+validação, FMR e FNMR no teste ficam equilibradas (\fmrCFP\% e \fnmrCFP\%), e a
+acurácia média é de \accCFP\%. No LFW (experimento B), o EER cai para \eerLFW\%,
+com acurácia de \accLFW\%, próxima dos 99,65\% reportados para o mesmo
+modelo~\cite{sandberg_facenet}. A comparação mais limpa do efeito da pose, porém,
+está dentro do próprio CFP: com as mesmas pessoas e o mesmo pipeline, o protocolo
+frontal $\times$ frontal tem EER de \eerFF\% e acurácia de \accFF\%, contra \eerCFP\%
+e \accCFP\% no frontal $\times$ perfil. Como identidades, fonte das imagens e modelo
+são os mesmos, essa diferença pode ser atribuída à pose.
+
 \begin{table}[t]
 \centering
-\caption{Resultados de verificação (FMR, FNMR e acurácia: média $\pm$ dp nos 10 folds).}
+\caption{Resultados de verificação. FMR, FNMR: média $\pm$ desvio-padrão nos 10 folds
+de teste, com o threshold da validação; no experimento C, threshold global do CFP-FP.
+EER, AUC e TAR@FAR=1\% usam todos os pares.}
 \label{tab:resultados}
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{lcccccc}
@@ -231,6 +291,7 @@ Experimento & EER (\%) & AUC & FMR (\%) & FNMR (\%) & TAR@1\% & FTA (\%)\\
 \midrule
 A: CFP-FP & \eerCFP & \aucCFP & \fmrCFP & \fnmrCFP & \tarCFP & \ftaCFP\\
 B: LFW & \eerLFW & \aucLFW & \fmrLFW & \fnmrLFW & \tarLFW & \ftaLFW\\
+Ref.: CFP-FF & \eerFF & \aucFF & \fmrFF & \fnmrFF & \tarFF & \ftaFF\\
 C: CFP-FP$\rightarrow$LFW & \eerLFW & \aucLFW & \fmrCross & \fnmrCross & \tarLFW & \ftaLFW\\
 \midrule
 Abl.: CFP-FP alinhado & \eerAlnCFP & \aucAlnCFP & \fmrAlnCFP & \fnmrAlnCFP & \tarAlnCFP & \ftaAlnCFP\\
@@ -239,73 +300,243 @@ Abl.: LFW alinhado & \eerAlnLFW & \aucAlnLFW & \fmrAlnLFW & \fnmrAlnLFW & \tarAl
 \end{tabular}}
 \end{table}
 
+\begin{table}[t]
+\centering
+\caption{Tabela padronizada de resultados (§26 do enunciado), configuração principal.}
+\label{tab:padronizada}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lll}
+\toprule
+Informação & CFP-FP (principal) & LFW\\
+\midrule
+Modalidade & \multicolumn{2}{l}{Face}\\
+CNN & \multicolumn{2}{l}{Inception-ResNet-v1 (FaceNet)}\\
+Pré-treinamento & \multicolumn{2}{l}{VGGFace2, softmax; pesos congelados}\\
+Nº de parâmetros & \multicolumn{2}{l}{\paramsM~M}\\
+Dimensão do embedding & \multicolumn{2}{l}{512 (L2)}\\
+Matching & \multicolumn{2}{l}{similaridade de cosseno}\\
+Threshold (EER, validação) & \thrCFP & \thrLFW\\
+EER & \eerCFP\% & \eerLFW\%\\
+AUC & \aucCFP & \aucLFW\\
+FMR & \fmrCFP\% & \fmrLFW\%\\
+FNMR & \fnmrCFP\% & \fnmrLFW\%\\
+TAR@FAR=1\% & \tarCFP\% & \tarLFW\%\\
+FTA & \ftaCFP\% & \ftaLFW\%\\
+Tempo de inferência & \multicolumn{2}{l}{\msBatchOne~ms/imagem (batch 1, GPU)}\\
+Tamanho do modelo & \multicolumn{2}{l}{\pesoMB~MB}\\
+Hardware & \multicolumn{2}{l}{GTX 1050 Ti 4~GB; Ryzen 7 1700}\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{cfp_fp_bbox/roc.png}
-\caption{Curva ROC no CFP-FP. \todo{sobrepor LFW?}}
+\includegraphics[width=0.49\columnwidth]{cfp_fp_bbox/roc.png}\hfill
+\includegraphics[width=0.49\columnwidth]{lfw_bbox/roc.png}
+\caption{Curvas ROC no CFP-FP (esquerda) e no LFW (direita).}
 \label{fig:roc}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\columnwidth]{cfp_fp_bbox/distributions.png}
-\caption{Distribuição dos scores genuínos e impostores no CFP-FP, com o threshold.}
+\includegraphics[width=0.32\textwidth]{cfp_fp_bbox/distributions.png}\hfill
+\includegraphics[width=0.32\textwidth]{cfp_ff_bbox/distributions.png}\hfill
+\includegraphics[width=0.32\textwidth]{lfw_bbox/distributions.png}
+\caption{Distribuições dos scores genuínos e impostores no CFP-FP (esquerda), no
+CFP-FF (centro) e no LFW (direita), com o threshold global de EER de cada um. Os
+impostores ficam em torno de zero nas três; o que muda é a cauda esquerda dos
+genuínos no frontal $\times$ perfil.}
 \label{fig:dist}
-\end{figure}
+\end{figure*}
 
-\todo{Comentar Tab.~\ref{tab:resultados}, Figs.~\ref{fig:roc} e~\ref{fig:dist}:
-separação das distribuições, sobreposição, onde ficam os erros.}
+As distribuições de scores (Fig.~\ref{fig:dist}) explicam essa diferença. Nas duas
+bases os impostores se concentram em torno de zero (média \muImpCFP{} no CFP-FP e
+\muImpLFW{} no LFW), como esperado para embeddings de pessoas diferentes. Os genuínos,
+porém, têm média \muGenCFP{} no CFP-FP contra \muGenFF{} no CFP-FF e \muGenLFW{} no
+LFW: comparar uma
+frontal com um perfil reduz a similaridade e cria uma cauda esquerda longa, que
+invade a região dos impostores. É essa cauda, e não um deslocamento dos impostores,
+que produz os erros no CFP-FP. A métrica mais exigente, TAR@FAR=1\%, mostra o
+efeito com clareza: \tarCFP\% no CFP-FP contra \tarLFW\% no LFW
+(Fig.~\ref{fig:roc}). O baixo desvio-padrão do threshold entre os folds indica que a
+escolha na validação é estável.
 
-\textbf{Eficiência.} \msBatchOne~ms por imagem com batch 1 e \msBatch~ms com batch 64
-na GPU (só a CNN; a MTCNN não está incluída).
+\textbf{Falha de aquisição.} O FTA é de \ftaCFP\% no CFP-FP e \ftaLFW\% no LFW. No
+CFP-FP, ele se concentra nos perfis (\ftaPerfil\% contra \ftaFrontal\% das
+frontais), nos quais a MTCNN às vezes não encontra o rosto com confiança suficiente.
+
+\textbf{Eficiência.} A extração de um embedding leva \msBatchOne~ms com batch 1 e
+\msBatch~ms por imagem com batch 64 na GPU, medidos só na CNN (sem a MTCNN). Com
+\paramsM{}M parâmetros e \pesoMB~MB, o modelo cabe com folga em uma GPU de entrada.
 
 % =====================================================================
 \section{Análise e discussão}
 % erros, cross-dataset, robustez, comparação, limitações
 \subsection{Cross-dataset}
-\todo{O threshold do CFP-FP (\thrCFP) é menor que o ótimo do LFW (\thrLFW): mais
-impostores aceitos (FMR \fmrCross\%) e menos genuínos rejeitados (FNMR \fnmrCross\%).}
+Aplicar ao LFW o threshold calibrado no CFP-FP ($\tau=\thrCFP$, experimento C) não
+altera EER nem AUC, que independem do limiar, mas muda o ponto de operação. O
+threshold ótimo do LFW é \thrLFW: como os genuínos do LFW têm scores muito mais
+altos, o limiar do CFP-FP é permissivo demais. A FNMR cai para \fnmrCross\%, mas a
+FMR sobe para \fmrCross\%, mais de dez vezes a do experimento B, e a acurácia cai
+para \accCross\%. Em uma aplicação real, isso significa aceitar impostores com
+frequência muito maior que a planejada. A lição é que um threshold só vale para a
+distribuição em que foi calibrado; trocar de cenário de aquisição (de frontal
+$\times$ perfil para quase frontal) exige recalibrar, ainda que o modelo seja o mesmo.
 
-\subsection{Robustez}
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{robustness/robustness.png}
-\caption{EER e FNMR (threshold congelado) sob desfoque e oclusão no CFP-FP.}
-\label{fig:robustez}
+\includegraphics[width=0.92\columnwidth]{cross_cfp_fp_to_lfw/errors.png}
+\caption{Erros no LFW com o threshold congelado do CFP-FP (experimento C): três
+falsos matches (linhas 1--3) e três falsos non-matches (linhas 4--6).}
+\label{fig:erros_cross}
 \end{figure}
-\todo{Discutir a curva: a partir de qual nível o desempenho cai; desfoque afeta também a
-detecção (FTA); oclusão afeta só a CNN.}
 
-\subsection{Alinhamento}
-\todo{O alinhamento piora as duas bases (CFP-FP: EER \eerAlnCFP\% vs.\ \eerCFP\%;
-LFW: \eerAlnLFW\% vs.\ \eerLFW\%). Explicação: o modelo foi pré-treinado com recortes
-pela bbox, com mais contexto (testa, queixo, cabelo); o template ArcFace gera um
-recorte mais justo e com outra geometria, fora da distribuição de treino. Lição:
-o pré-processamento deve seguir o do pré-treino.}
+A Fig.~\ref{fig:erros_cross} mostra os erros desse cenário. Dos \nFmCross{}
+impostores aceitos, apenas \nFmCrossLFW{} também seriam aceitos com o threshold do
+próprio LFW; a maioria dos falsos matches é, portanto, consequência direta do limiar
+transferido. Os de maior score envolvem homens do leste asiático, de mesma faixa
+etária, com cabelo escuro e, em um dos pares, óculos. Esse padrão é compatível com o
+efeito demográfico documentado em avaliações de larga escala, em que a taxa de falsos
+matches varia com a origem e a idade dos indivíduos~\cite{grother2019frvt}, e mostra
+que um único threshold global pode ter FMR muito diferente entre grupos. Os falsos
+non-matches têm scores entre 0,05 e 0,13, abaixo até do limiar permissivo do
+CFP-FP: expressão exagerada com maquiagem pesada e boné, rosto inclinado para baixo
+e parcialmente coberto, e um par em que penteado e idade aparente mudam bastante
+entre as fotos.
+
+\subsection{Robustez}
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.75\textwidth]{robustness/robustness.png}
+\caption{EER e FNMR (threshold congelado) no CFP-FP sob desfoque
+($\sigma = 0; 1{,}5; 3; 5$) e oclusão (0, 15, 30 e 45\% do lado do recorte),
+aplicados à segunda imagem de cada par.}
+\label{fig:robustez}
+\end{figure*}
+
+\begin{table}[t]
+\centering
+\caption{Robustez no CFP-FP. FMR e FNMR com o threshold congelado do experimento
+limpo; FTA medido nas amostras degradadas (perfis).}
+\label{tab:robustez}
+\small
+\begin{tabular}{llcccc}
+\toprule
+Degradação & Nível & EER & FMR & FNMR & FTA\\
+\midrule
+Nenhuma & -- & \eerBlurOrig & \fmrBlurOrig & \fnmrBlurOrig & \ftaOclBaixa\\
+\midrule
+Desfoque & $\sigma=1{,}5$ & \eerBlurBaixa & \fmrBlurBaixa & \fnmrBlurBaixa & \ftaBlurBaixa\\
+ & $\sigma=3$ & \eerBlurMedia & \fmrBlurMedia & \fnmrBlurMedia & \ftaBlurMedia\\
+ & $\sigma=5$ & \eerBlurAlta & \fmrBlurAlta & \fnmrBlurAlta & \ftaBlurAlta\\
+\midrule
+Oclusão & 15\% & \eerOclBaixa & \fmrOclBaixa & \fnmrOclBaixa & \ftaOclBaixa\\
+ & 30\% & \eerOclMedia & \fmrOclMedia & \fnmrOclMedia & \ftaOclMedia\\
+ & 45\% & \eerOclAlta & \fmrOclAlta & \fnmrOclAlta & \ftaOclAlta\\
+\bottomrule
+\end{tabular}
+\par\smallskip\footnotesize Valores em \%.
+\end{table}
+A Fig.~\ref{fig:robustez} e a Tab.~\ref{tab:robustez} mostram que o desfoque é muito mais prejudicial que a
+oclusão. Com desfoque baixo ($\sigma=1{,}5$) o EER sobe pouco (de \eerBlurOrig\% para
+\eerBlurBaixa\%), mas com $\sigma=3$ ele dobra (\eerBlurMedia\%) e com $\sigma=5$ chega
+a \eerBlurAlta\%. Com o threshold congelado, quase todo o aumento vai para a FNMR
+(\fnmrBlurAlta\% no nível alto), enquanto a FMR fica estável (\fmrBlurAlta\%): o
+desfoque apaga detalhes e reduz a similaridade de pares genuínos, mas não torna
+pessoas diferentes parecidas. Parte do efeito vem da detecção, pois o desfoque é
+aplicado antes da MTCNN: o FTA das imagens degradadas passa de \ftaOclBaixa\% para
+\ftaBlurAlta\%.
+
+A oclusão é aplicada depois do recorte, então não afeta a detecção (FTA constante em
+\ftaOclAlta\%). Um bloco de 15\% do lado praticamente não muda o EER
+(\eerOclBaixa\%); com 30\% e 45\% ele sobe para \eerOclMedia\% e \eerOclAlta\%, de
+novo com o aumento concentrado na FNMR. A rede tolera bem a perda de uma região
+pequena, o que é coerente com uma representação distribuída pela face toda; quando o
+bloco cobre olhos ou boca de um perfil, que já mostra só metade do rosto, sobra pouca
+informação discriminante.
+
+\subsection{Pré-processamento: bbox $\times$ alinhamento}
+O alinhamento por landmarks piorou as duas bases (CFP-FP: EER de \eerAlnCFP\% contra
+\eerCFP\%; LFW: \eerAlnLFW\% contra \eerLFW\%), contrariando a intuição de que
+alinhar sempre ajuda. A explicação é a coerência com o pré-treino: o modelo foi
+treinado com recortes da MTCNN pela bbox, que incluem testa, queixo e parte do
+cabelo, enquanto o template do ArcFace gera um recorte mais justo e com outra escala
+e posição dos olhos, fora da distribuição vista no treino. No CFP-FP há um segundo
+problema: o template é frontal, e apenas \landmarksPerfil{} dos perfis têm landmarks
+plausíveis (contra \landmarksFrontal{} das frontais), de modo que a ablação mistura
+dois tipos de recorte dentro de um mesmo par. Na comparação pareada por fold, a bbox
+tem acurácia maior em \ablWinsCFP{} dos 10 folds do CFP-FP (diferença média de
+\ablDiffCFP{} p.p.; teste de Wilcoxon, $p=\ablPCFP$) e em \ablWinsLFW{} dos 10 do LFW
+(\ablDiffLFW{} p.p.; $p=\ablPLFW$). A vantagem é, portanto, consistente no CFP-FP,
+mas não significativa a 5\% no LFW, em que as duas variantes já estão perto do teto.
+A conclusão prática é que, ao usar um
+modelo pré-treinado congelado, o pré-processamento deve reproduzir o do pré-treino.
 
 \subsection{Análise de erros}
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{cfp_fp_bbox/errors.png}
-\caption{Três falsos matches (acima) e três falsos non-matches (abaixo) no CFP-FP.}
+\includegraphics[width=0.92\columnwidth]{cfp_fp_bbox/errors.png}
+\caption{Três falsos matches (linhas 1--3) e três falsos non-matches (linhas 4--6) no
+CFP-FP, sem repetir imagens. Para cada amostra: imagem bruta e recorte usado.}
 \label{fig:erros}
 \end{figure}
-\todo{Hipótese para cada caso (perfil extremo, oclusão, iluminação, semelhança entre
-pessoas, detecção errada).}
+A Fig.~\ref{fig:erros} mostra os erros de maior confiança.
+
+\emph{Falsos matches.} Os três pares têm scores próximos de 0,5, bem acima do
+threshold, e envolvem pessoas do mesmo gênero e faixa etária, com cabelo e tom de
+pele parecidos. Em todos, a segunda imagem é um perfil, que oferece poucos traços
+para distinguir as identidades; a rede parece apoiar-se em atributos
+globais (cabelo, contorno, cor da pele) que coincidem. Em um dos pares o perfil está
+parcialmente coberto por uma mão.
+
+\emph{Falsos non-matches.} Os três pares têm score negativo, ou seja, a rede considera
+as amostras menos parecidas que um impostor típico. As hipóteses são: (i) perfil com
+a cabeça inclinada para baixo e óculos com reflexo, que escondem os olhos; (ii) perfil
+em preto e branco e muito próximo da câmera, cujo recorte corta parte do rosto;
+(iii) cabeça inclinada para trás, em que a bbox fica deslocada e o recorte mostra
+quase só a bochecha. Os três combinam pose extrema com outro fator (oclusão, cor,
+enquadramento), e dois deles decorrem de falha parcial da detecção, o que indica que
+parte dos erros está no pré-processamento, e não na CNN.
 
 \subsection{Comparação com a literatura}
-\todo{Comparar com os números de referência (mesmo protocolo), destacando que os modelos
-de ponta usam perdas de margem angular e bases de treino maiores.}
+No LFW, a acurácia de \accLFW\% fica próxima dos 99,65\% reportados para o mesmo
+modelo~\cite{sandberg_facenet}; a diferença restante é compatível com detalhes de
+pré-processamento (margem do recorte, imagens espelhadas no teste, outra
+implementação da MTCNN). Fica abaixo dos métodos de margem angular, como CosFace
+(99,73\%)~\cite{wang2018cosface}, treinados com mais dados e perdas mais
+discriminativas. No CFP-FP, a acurácia de \accCFP\% mostra que um modelo de 2018,
+treinado só com softmax e usado sem ajuste, ainda perde mais de quatro pontos
+percentuais na comparação frontal $\times$ perfil em relação ao cenário quase
+frontal, que é justamente a lacuna que as perdas de margem angular e os métodos
+específicos para pose~\cite{tran2017disentangled,cao2018pose} buscam reduzir.
 
 \subsection{Limitações}
 O VGGFace2, o CFP e o LFW são compostos por celebridades, então pode haver identidades
-em comum entre o pré-treino e o teste. O tempo medido não inclui a detecção. O modelo é
-usado congelado, sem adaptação ao cenário de perfil. \todo{outras}
+em comum entre o pré-treino e o teste, o que tenderia a favorecer os resultados. O
+tempo medido não inclui a detecção. O modelo é usado congelado, sem adaptação ao
+cenário de perfil. Os folds oficiais têm 700 (CFP-FP) e 600 (LFW) pares, o que limita
+a precisão de FMR muito baixas: TAR@FAR=1\% é estimado com todos os pares, mas não foi
+possível avaliar pontos como FAR=0,1\% com confiança. A robustez foi avaliada apenas
+no CFP-FP e com degradações sintéticas.
 
 % =====================================================================
 \section{Conclusão}
-\todo{Síntese dos achados (3--4 frases com números) e perspectivas: fine-tuning em
-perfis, perdas de margem angular, alinhamento sensível à pose.}
+Este trabalho avaliou a verificação facial 1:1 com embeddings de uma
+Inception-ResNet-v1 pré-treinada no VGGFace2 e usada sem ajuste. No cenário frontal
+$\times$ perfil do CFP-FP, o sistema atinge EER de \eerCFP\%, contra \eerFF\% no
+protocolo frontal $\times$ frontal com as mesmas pessoas e \eerLFW\% no LFW: a pose
+reduz a similaridade dos pares genuínos e é a principal fonte de erro. O
+threshold calibrado no CFP-FP, aplicado ao LFW, eleva a FMR para \fmrCross\%,
+mostrando que o limiar precisa ser recalibrado a cada cenário. O sistema é robusto a
+desfoque leve e a oclusões pequenas, mas o EER chega a \eerBlurAlta\% com desfoque
+forte. Por fim, a ablação mostrou que alinhar a face por um template diferente do
+usado no pré-treino piora o desempenho.
+
+Como trabalhos futuros, propõe-se: ajustar o modelo com pares frontal-perfil
+(fine-tuning) ou substituí-lo por uma rede treinada com perda de margem angular;
+usar um detector de landmarks robusto a pose, que permita um alinhamento específico
+para perfis; e estimar a qualidade da amostra para rejeitar imagens muito degradadas
+antes da comparação.
 
 \bibliographystyle{IEEEtran}
 \bibliography{refs}

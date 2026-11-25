@@ -11,7 +11,7 @@ No protocolo k-fold, para cada fold k o teste é o fold k e a validação
 (definição do threshold) são os demais folds. Não há conjunto de treino porque
 o modelo é usado com os pesos pré-treinados congelados.
 
-Uso: python make_protocols.py [--dataset cfp_fp|lfw]
+Uso: python make_protocols.py [--dataset cfp_fp|cfp_ff|lfw]
 """
 from __future__ import annotations
 
@@ -41,12 +41,22 @@ def _norm_cfp(rel: str) -> str:
 
 
 def cfp_fp(cfg: dict) -> pd.DataFrame:
+    return _cfp(cfg, "FP")
+
+
+def cfp_ff(cfg: dict) -> pd.DataFrame:
+    """Protocolo frontal x frontal do CFP: mesmas pessoas, sem variação de pose.
+    Serve de referência para isolar o efeito da pose (FF x FP)."""
+    return _cfp(cfg, "FF")
+
+
+def _cfp(cfg: dict, split: str) -> pd.DataFrame:
     root = dataset_root(cfg, "cfp_fp")
     proto = root / "Protocol"
     F = _read_index(proto / "Pair_list_F.txt")
-    P = _read_index(proto / "Pair_list_P.txt")
+    P = F if split == "FF" else _read_index(proto / "Pair_list_P.txt")
     rows = []
-    split_dir = proto / "Split" / "FP"
+    split_dir = proto / "Split" / split
     folds = sorted(d for d in split_dir.iterdir() if d.is_dir())
     if len(folds) != 10:
         raise SystemExit(f"Esperava 10 folds em {split_dir}, achei {len(folds)}")
@@ -124,11 +134,11 @@ def check_and_save(cfg: dict, name: str, df: pd.DataFrame) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dataset", choices=["cfp_fp", "lfw"], action="append")
+    ap.add_argument("--dataset", choices=["cfp_fp", "cfp_ff", "lfw"], action="append")
     args = ap.parse_args()
     cfg = load_config()
-    for name in args.dataset or ["cfp_fp", "lfw"]:
-        check_and_save(cfg, name, {"cfp_fp": cfp_fp, "lfw": lfw}[name](cfg))
+    for name in args.dataset or ["cfp_fp", "cfp_ff", "lfw"]:
+        check_and_save(cfg, name, {"cfp_fp": cfp_fp, "cfp_ff": cfp_ff, "lfw": lfw}[name](cfg))
 
 
 if __name__ == "__main__":

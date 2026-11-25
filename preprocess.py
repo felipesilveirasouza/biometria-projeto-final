@@ -201,7 +201,7 @@ def run(cfg: dict, dataset: str, keys: list[str], variant: str | None = None,
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dataset", choices=["cfp_fp", "lfw"], required=True)
+    ap.add_argument("--dataset", choices=["cfp_fp", "cfp_ff", "lfw"], required=True)
     g = ap.add_mutually_exclusive_group()
     g.add_argument("--align", action="store_true", help="força o alinhamento por landmarks (ablação)")
     g.add_argument("--no-align", action="store_true", help="força o recorte só pela bbox")

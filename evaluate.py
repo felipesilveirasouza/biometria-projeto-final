@@ -93,7 +93,7 @@ def evaluate(cfg: dict, dataset: str, variant: str, tag: str, frozen_from: str |
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dataset", choices=["cfp_fp", "lfw"], required=True)
+    ap.add_argument("--dataset", choices=["cfp_fp", "cfp_ff", "lfw"], required=True)
     ap.add_argument("--variant", default=None)
     ap.add_argument("--tag", default=None, help="pasta em results/ (padrão: <base>_<variante>)")
     ap.add_argument("--frozen-from", default=None, help="tag cuja threshold.json será aplicada (cross-dataset)")

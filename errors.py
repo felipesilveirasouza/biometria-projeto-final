@@ -72,7 +72,7 @@ def main() -> None:
         for j, key in enumerate([r.amostra_1, r.amostra_2]):
             axes[i, 2 * j].imshow(Image.open(root / key).convert("RGB"))
             axes[i, 2 * j + 1].imshow(Image.open(cdir / (key.rsplit(".", 1)[0] + ".png")))
-            axes[i, 2 * j].set_title(key.split("/")[-3] if ds == "cfp_fp" else key.split("/")[0], fontsize=7)
+            axes[i, 2 * j].set_title(key.split("/")[-3] if ds .startswith("cfp") else key.split("/")[0], fontsize=7)
         axes[i, 0].set_ylabel(f"{r.erro}\nscore={r.score:.3f}\nthr={r.threshold:.3f}", fontsize=8)
         for ax in axes[i]:
             ax.set_xticks([]), ax.set_yticks([])

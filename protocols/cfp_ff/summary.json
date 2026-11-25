@@ -1,0 +1,12 @@
+{
+  "dataset": "cfp_ff",
+  "folds": 10,
+  "pairs": 7000,
+  "genuine": 3500,
+  "impostor": 3500,
+  "images": 4764,
+  "identities": 500,
+  "missing_images": 0,
+  "identity_disjoint_folds": true,
+  "folds_sharing_identities": {}
+}

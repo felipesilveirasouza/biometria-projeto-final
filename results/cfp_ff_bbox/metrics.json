@@ -1,0 +1,39 @@
+{
+  "dataset": "cfp_ff",
+  "variant": "bbox",
+  "matching": "cosseno (embeddings L2-normalizados)",
+  "threshold_rule": "eer",
+  "EER": 0.010000000000000005,
+  "EER_threshold": 0.37551116943359375,
+  "AUC": 0.9991817551020409,
+  "TAR@FAR=1%": 0.9908571428571429,
+  "n_genuine": 3500,
+  "n_impostor": 3500,
+  "protocol": "oficial 10 folds (threshold nos 9 folds de validação, teste no restante)",
+  "kfold": {
+    "FMR": {
+      "mean": 0.01,
+      "std": 0.0060609152673132645
+    },
+    "FNMR": {
+      "mean": 0.010285714285714287,
+      "std": 0.007024414824604105
+    },
+    "accuracy": {
+      "mean": 0.9898571428571428,
+      "std": 0.00565244313360909
+    },
+    "threshold": {
+      "mean": 0.37477271258831024,
+      "std": 0.0042379119290364056
+    }
+  },
+  "threshold": 0.37477271258831024,
+  "FMR": 0.01,
+  "FNMR": 0.010285714285714287,
+  "accuracy": 0.9898571428571428,
+  "FTA": 0.001889168765743073,
+  "fta_images": 9,
+  "pairs_with_fta": 25,
+  "fta_policy": "fallback"
+}

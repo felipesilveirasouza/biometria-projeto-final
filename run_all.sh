@@ -20,6 +20,11 @@ python evaluate.py --dataset cfp_fp
 echo "== Experimento B: segunda base com protocolo próprio (LFW, 10 folds)"
 python evaluate.py --dataset lfw
 
+echo "== Referência de pose: CFP frontal x frontal (FF), mesmas pessoas sem perfil"
+python preprocess.py --dataset cfp_ff
+python extract_embeddings.py --dataset cfp_ff
+python evaluate.py --dataset cfp_ff
+
 echo "== Experimento C: cross-dataset (threshold congelado do CFP-FP aplicado ao LFW)"
 python evaluate.py --dataset lfw --frozen-from cfp_fp_bbox --tag cross_cfp_fp_to_lfw
 
@@ -39,6 +44,8 @@ python errors.py --tag cfp_fp_bbox
 python errors.py --tag cross_cfp_fp_to_lfw
 python figures.py --dataset cfp_fp
 python figures.py --dataset lfw
+python figures.py --examples
+python figures.py --dataset cfp_fp --n 1 --out pipeline_artigo.png   # versão compacta usada no artigo
 
 echo "== Tabela padronizada"
 python report.py

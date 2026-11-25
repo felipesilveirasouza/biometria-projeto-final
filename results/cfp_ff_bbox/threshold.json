@@ -1,0 +1,6 @@
+{
+  "dataset": "cfp_ff",
+  "variant": "bbox",
+  "rule": "eer",
+  "threshold": 0.37551116943359375
+}
