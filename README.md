@@ -151,4 +151,4 @@ run_all.sh              tudo, na ordem
 
 ## Versão avaliada
 
-Repositório: https://github.com/felipesilveirasouza/biometria-projeto-final (privado) · Versão: tag `final-v1.0`
+Repositório: https://github.com/felipesilveirasouza/biometria-projeto-final · Versão: tag `final-v1.0`
