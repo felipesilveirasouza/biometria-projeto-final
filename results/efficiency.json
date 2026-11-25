@@ -7,8 +7,8 @@
   "pretrained": "vggface2",
   "timing": {
     "device": "cuda",
-    "ms_per_image_batch1": 22.256,
-    "ms_per_image_batch64": 3.662,
+    "ms_per_image_batch1": 18.527,
+    "ms_per_image_batch64": 3.593,
     "n_images": 256
   },
   "hardware": {

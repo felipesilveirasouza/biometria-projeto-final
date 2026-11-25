@@ -18,7 +18,7 @@
 | FNMR | 1.03% ± 0.70% |
 | TAR@FAR=1% | 99.09% |
 | FTA | 0.19% |
-| Tempo de inferência | 22.256 ms/imagem (batch 1, cuda) |
+| Tempo de inferência | 18.527 ms/imagem (batch 1, cuda) |
 | Tamanho do modelo | 89.9 MB |
 | Hardware | NVIDIA GeForce GTX 1050 Ti / AMD Ryzen 7 1700 Eight-Core Processor |
 
@@ -40,7 +40,7 @@
 | FNMR | 6.14% ± 2.33% |
 | TAR@FAR=1% | 85.97% |
 | FTA | 1.56% |
-| Tempo de inferência | 22.256 ms/imagem (batch 1, cuda) |
+| Tempo de inferência | 18.527 ms/imagem (batch 1, cuda) |
 | Tamanho do modelo | 89.9 MB |
 | Hardware | NVIDIA GeForce GTX 1050 Ti / AMD Ryzen 7 1700 Eight-Core Processor |
 
@@ -62,7 +62,7 @@
 | FNMR | 5.06% ± 1.82% |
 | TAR@FAR=1% | 89.80% |
 | FTA | 1.56% |
-| Tempo de inferência | 22.256 ms/imagem (batch 1, cuda) |
+| Tempo de inferência | 18.527 ms/imagem (batch 1, cuda) |
 | Tamanho do modelo | 89.9 MB |
 | Hardware | NVIDIA GeForce GTX 1050 Ti / AMD Ryzen 7 1700 Eight-Core Processor |
 
@@ -84,7 +84,7 @@
 | FNMR | 0.17% |
 | TAR@FAR=1% | 99.60% |
 | FTA | 0.01% |
-| Tempo de inferência | 22.256 ms/imagem (batch 1, cuda) |
+| Tempo de inferência | 18.527 ms/imagem (batch 1, cuda) |
 | Tamanho do modelo | 89.9 MB |
 | Hardware | NVIDIA GeForce GTX 1050 Ti / AMD Ryzen 7 1700 Eight-Core Processor |
 
@@ -106,7 +106,7 @@
 | FNMR | 0.90% ± 0.90% |
 | TAR@FAR=1% | 99.23% |
 | FTA | 0.01% |
-| Tempo de inferência | 22.256 ms/imagem (batch 1, cuda) |
+| Tempo de inferência | 18.527 ms/imagem (batch 1, cuda) |
 | Tamanho do modelo | 89.9 MB |
 | Hardware | NVIDIA GeForce GTX 1050 Ti / AMD Ryzen 7 1700 Eight-Core Processor |
 
@@ -128,6 +128,6 @@
 | FNMR | 0.63% ± 0.74% |
 | TAR@FAR=1% | 99.60% |
 | FTA | 0.01% |
-| Tempo de inferência | 22.256 ms/imagem (batch 1, cuda) |
+| Tempo de inferência | 18.527 ms/imagem (batch 1, cuda) |
 | Tamanho do modelo | 89.9 MB |
 | Hardware | NVIDIA GeForce GTX 1050 Ti / AMD Ryzen 7 1700 Eight-Core Processor |

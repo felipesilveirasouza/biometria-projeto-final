@@ -151,4 +151,4 @@ run_all.sh              tudo, na ordem
 
 ## Versão avaliada
 
-Repositório: _preencher_ · Versão: tag `final-v1.0` (ou hash do commit)
+Repositório: https://github.com/felipesilveirasouza/biometria-projeto-final (privado) · Versão: tag `final-v1.0`

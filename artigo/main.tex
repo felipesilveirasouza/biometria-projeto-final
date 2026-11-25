@@ -366,7 +366,9 @@ CFP-FP, ele se concentra nos perfis (\ftaPerfil\% contra \ftaFrontal\% das
 frontais), nos quais a MTCNN às vezes não encontra o rosto com confiança suficiente.
 
 \textbf{Eficiência.} A extração de um embedding leva \msBatchOne~ms com batch 1 e
-\msBatch~ms por imagem com batch 64 na GPU, medidos só na CNN (sem a MTCNN). Com
+\msBatch~ms por imagem com batch 64 na GPU, medidos só na CNN (sem a MTCNN). Por
+ser tempo de relógio, esse valor varia entre execuções conforme a carga da máquina
+(as demais métricas são determinísticas e se reproduzem exatamente). Com
 \paramsM{}M parâmetros e \pesoMB~MB, o modelo cabe com folga em uma GPU de entrada.
 
 % =====================================================================
